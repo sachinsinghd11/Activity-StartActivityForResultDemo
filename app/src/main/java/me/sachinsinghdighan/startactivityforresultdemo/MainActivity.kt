@@ -6,6 +6,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
@@ -13,8 +15,31 @@ class MainActivity : AppCompatActivity() {
     private lateinit var resultTextView: TextView
     private lateinit var openSecondActivityButton: Button
 
-    companion object {
+    /*companion object {
         private const val REQUEST_CODE_SECOND_ACTIVITY = 100
+    }*/
+
+
+    // Modern way to handle activity results
+    @SuppressLint("SetTextI18n")
+    private val secondActivityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result: ActivityResult ->
+        when (result.resultCode) {
+            Activity.RESULT_OK -> {
+                val data = result.data
+                val message = data?.getStringExtra("result_message") ?: "No message"
+                val number = data?.getIntExtra("result_number", 0) ?: 0
+
+                resultTextView.text = "Result: $message, Number: $number"
+            }
+            Activity.RESULT_CANCELED -> {
+                resultTextView.text = "Operation was cancelled"
+            }
+            else -> {
+                resultTextView.text = "Unknown result code: ${result.resultCode}"
+            }
+        }
     }
 
     @SuppressLint("MissingInflatedId")
@@ -33,14 +58,17 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("user_name", "John Doe")
             intent.putExtra("user_age", 25)
 
+            // Launch activity using the modern approach
+            secondActivityResultLauncher.launch(intent)
+
             // Start activity for result (DEPRECATED - see modern approach below)
-            @Suppress("DEPRECATION")
-            startActivityForResult(intent, REQUEST_CODE_SECOND_ACTIVITY)
+            //@Suppress("DEPRECATION")
+            //startActivityForResult(intent, REQUEST_CODE_SECOND_ACTIVITY)
         }
     }
 
 
-    @SuppressLint("SetTextI18n")
+    /*@SuppressLint("SetTextI18n")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -63,5 +91,5 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-    }
+    }*/
 }
